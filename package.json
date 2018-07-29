@@ -1,6 +1,6 @@
 {
   "name": "deribit-ws-js",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Deribit.com WebSocket browser generic library",
   "main": "./lib/index.js",
   "license": "MIT",
