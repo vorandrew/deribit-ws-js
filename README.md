@@ -11,7 +11,16 @@ Constructor
 
 ```js
 import Deribit from 'deribit-ws-js'
-const ws = new Deribit(key, secret, testnet = false)
+const ws = new Deribit({
+  key: 'deribit_key',
+  secret: 'secret',
+  testnet: false,
+  message: msg => console.log(msg),
+
+  // see documentation for possible events
+  trade: trade => console.log(msg),
+
+})
 ```
 
 Wait for connection
