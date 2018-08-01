@@ -65,6 +65,13 @@ function sig(action, obj = {}, key, sec) {
 }
 
 let wsEvents = {
+  index: {
+    hook: 'order_book',
+    filter: (msg, filter) => {
+      console.log(msg, filter)
+      return true
+    },
+  }, // order book change
   order_book_event: {
     hook: 'order_book',
     filter: (msg, filter) => {
@@ -149,8 +156,12 @@ export default class WS {
     log('Got', res)
 
     if (res.notifications) {
-      setTimeout(() => this._notifications(res.notifications), 0)
-      return
+      if (Array.isArray(res.notifications)) {
+        setTimeout(() => this._notifications(res.notifications), 0)
+        return
+      } else {
+        setTimeout(() => this._notifications([res.notifications]), 0)
+      }
     }
 
     if (!res.id) {
