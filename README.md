@@ -27,6 +27,7 @@ Wait for connection
 
 ```js
 await ws.connected
+// or ws.connected.then(() => console.log('Ready') )
 ```
 
 Disconnect when done
