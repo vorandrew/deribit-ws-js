@@ -67,10 +67,7 @@ function sig(action, obj = {}, key, sec) {
 let wsEvents = {
   index: {
     hook: 'order_book',
-    filter: (msg, filter) => {
-      console.log(msg, filter)
-      return true
-    },
+    filter: () => true,
   }, // order book change
   order_book_event: {
     hook: 'order_book',
@@ -206,6 +203,8 @@ export default class WS {
         action: `/api/v1/${privacy}/${action}`,
         arguments: args,
       }
+
+      msg.arguments.continue = true
 
       if (privateMethods.includes(action)) {
         msg.sig = sig(msg.action, msg.args, this.opt.key, this.opt.secret)
