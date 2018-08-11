@@ -1,3 +1,5 @@
+import { Adapter, log, error, nextTick } from './adapter'
+
 import crypto from 'crypto'
 
 let privateMethods = [
@@ -15,18 +17,6 @@ let privateMethods = [
   'subscribe',
   'tradehistory',
 ]
-
-function log(msg, obj) {
-  if (window.DEBUG) {
-    /* eslint-disable-next-line no-console */
-    console.log('Deribit', msg, obj)
-  }
-}
-
-function logErr(msg, obj) {
-  /* eslint-disable-next-line no-console */
-  console.error('Deribit', msg, obj)
-}
 
 function serialize(m) {
   return Object.keys(m)
@@ -116,18 +106,20 @@ export default class WS {
       ? 'wss://test.deribit.com/ws/api/v1/'
       : 'wss://www.deribit.com/ws/api/v1/'
 
-    this.ws = new WebSocket(url)
+    log('Connecting to ' + url)
 
+    this.ws = new Adapter(url)
+
+    /* eslint-disable-next-line no-undef */
     this.connected = new Promise(resolve => {
-      this.ws.onopen = () => {
+      this.ws.onOpen(() => {
         resolve()
         log('Connected')
-      }
+      })
     })
 
-    this.ws.onmessage = msg => this._onMessage(msg)
-    this.ws.close = () => log('Close')
-    this.ws.error = err => logErr(err)
+    this.ws.onMessage(msg => this._onMessage(msg))
+    this.ws.onError(error)
 
     this.n = 1
     this.promises = {}
@@ -142,22 +134,22 @@ export default class WS {
     try {
       res = JSON.parse(msg.data)
     } catch (err) {
-      logErr('Error parsing', msg)
+      error('Error parsing', msg)
       return
     }
 
     if (typeof res.success === 'boolean' && !res.success) {
-      return logErr('onMessage: ', res.message)
+      return error('onMessage: ', res.message)
     }
 
     log('Got', res)
 
     if (res.notifications) {
       if (Array.isArray(res.notifications)) {
-        setTimeout(() => this._notifications(res.notifications), 0)
+        nextTick(() => this._notifications(res.notifications))
         return
       } else {
-        setTimeout(() => this._notifications([res.notifications]), 0)
+        nextTick(() => this._notifications([res.notifications]))
       }
     }
 
@@ -168,14 +160,14 @@ export default class WS {
     let { resolve, action } = this.promises[res.id]
 
     if (this.opt.message) {
-      setTimeout(() => this.opt.message(res.result), 0)
+      nextTick(() => this.opt.message(res.result))
     }
 
     if (this.opt[action]) {
-      setTimeout(() => this.opt[action](res.result), 0)
+      nextTick(() => this.opt[action](res.result))
     }
 
-    setTimeout(() => resolve(res.result), 0)
+    nextTick(() => resolve(res.result))
 
     delete this.promises[res.id]
   }
@@ -183,6 +175,10 @@ export default class WS {
   _send(json) {
     log('Sending', json)
     this.ws.send(JSON.stringify(json))
+  }
+
+  close() {
+    this.ws.close()
   }
 
   action(action, args = {}) {
@@ -207,7 +203,7 @@ export default class WS {
       msg.arguments.continue = true
 
       if (privateMethods.includes(action)) {
-        msg.sig = sig(msg.action, msg.args, this.opt.key, this.opt.secret)
+        msg.sig = sig(msg.action, msg.arguments, this.opt.key, this.opt.secret)
       }
 
       this._send(msg)
@@ -265,12 +261,12 @@ export default class WS {
       hooks.forEach(oneHook => {
         msgs.forEach(msg => {
           if (!oneHook.filter || oneHook.filter.length === 0) {
-            setTimeout(() => oneHook.cb(msg), 0)
+            nextTick(() => oneHook.cb(msg))
             return
           }
 
           if (filter(msg, oneHook.filter)) {
-            setTimeout(() => oneHook.cb(msg), 0)
+            nextTick(() => oneHook.cb(msg))
           }
         })
       })
