@@ -56,27 +56,24 @@
   },
   "babel": {
     "presets": [
-      "env"
-    ],
-    "plugins": [
-      "transform-object-rest-spread",
       [
-        "transform-runtime",
+        "@babel/preset-env",
         {
-          "polyfill": false,
-          "regenerator": true
+          "targets": {
+            "node": "current"
+          }
         }
       ]
     ]
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-eslint": "^8.2.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-runtime": "^6.26.0",
+    "@babel/cli": "*",
+    "@babel/core": "*",
+    "@babel/node": "*",
+    "@babel/preset-env": "*",
+    "@babel/register": "*",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-eslint": "*",
     "eslint": "^4.19.1",
     "husky": "^0.14.3"
   },
